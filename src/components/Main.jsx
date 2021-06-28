@@ -12,8 +12,17 @@ const Grid = styled.div`
 `
 
 const Picture = styled.div`
-    img {
+    border: 10px solid white;
+    background-color: #ecf5fd;
+    min-height: 500px;
+    
+    a {
+        display: flex;
         width: 100%;
+    }
+
+    img {
+        object-fit: cover;
     }
 `
 
@@ -24,22 +33,21 @@ export default function Main() {
     let search = useRef()
 
     let fetchPictures = async (type) => {
-        let response, data
+        let response
         let header = { headers: { "Authorization": "563492ad6f91700001000001e3402c4bd542451a92ce545f9c88a551" } }
         switch (type) {
             case "initial":
+                search.current.value = ''
                 response = await fetch("https://api.pexels.com/v1/curated?per_page=30", header)
-                data = await response.json()
-                setPictures(data.photos)
                 break;
             case "search":
                 response = await fetch("https://api.pexels.com/v1/search?query=" + search.current.value + "&per_page=30", header)
-                data = await response.json()
-                setPictures(data.photos)
                 break;
             default:
                 break;
         }
+        let data = await response.json()
+        setPictures(data.photos)
     }
 
 
@@ -48,11 +56,18 @@ export default function Main() {
     return (
         <div className="container">
             <div className="search">
-                <input type="text" placeholder='e.g. apples, nature' ref={search} />
+                <input
+                    type="text"
+                    placeholder='e.g. apples, nature'
+                    ref={search}
+                    onKeyPress={(e) => {
+                        if (e.code === 'Enter') fetchPictures("search")
+                    }}
+                />
                 <button onClick={() => fetchPictures("search")}>Search</button>
             </div>
             <Grid>
-                {pictures.map(el => <Picture key={el.url}><a href={el.url}><img src={el.src.portrait} alt={el.photographer}/></a></Picture>)}
+                {pictures.map(el => <Picture key={el.url}><a href={el.url}><img src={el.src.portrait} alt={el.photographer} /></a></Picture>)}
             </Grid>
         </div>
     )
